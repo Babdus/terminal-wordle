@@ -88,7 +88,7 @@ def escape(x, y, matrix, used_letters, char, word, length, words):
     if confirm == 'n' or confirm == 'ნ':
         clear(1)
         return x, y
-    exit()
+    lose(word)
 
 
 def backspace(x, y, matrix, used_letters, char, word, length, words):
@@ -100,21 +100,33 @@ def backspace(x, y, matrix, used_letters, char, word, length, words):
 
 def determine_matches(y, matrix, used_letters, word, length, words):
     entry = ''.join([cell['char'] for cell in matrix[y]])
+
+    # check word in dictionary
     if entry not in words:
-        for x in range(length):
-            matrix[y][x]['color'] = red
         return False
+
+    not_green_word = [char for char in word]
+
+    # Check for green letters
     for x in range(length):
         char = matrix[y][x]['char']
         if char == word[x]:
             matrix[y][x]['color'] = green
             used_letters[char] = green
+            not_green_word[x] = ''
+
+    not_green_word = [char for char in not_green_word if char != '']
+
+    # Check for yellow letters
     for x in range(length):
         char = matrix[y][x]['char']
-        if matrix[y][x]['color'] != green and char in word:
+        if matrix[y][x]['color'] != green and char in not_green_word:
             matrix[y][x]['color'] = yellow
             if used_letters[char] != green:
                 used_letters[char] = yellow
+            not_green_word[not_green_word.index(char)] = ''
+
+    # Check for gray letters
     for x in range(length):
         char = matrix[y][x]['char']
         if used_letters[char] not in {yellow, green}:
@@ -123,6 +135,8 @@ def determine_matches(y, matrix, used_letters, word, length, words):
 
 
 def twinkle(y, matrix, used_letters, length):
+    for x in range(length):
+        matrix[y][x]['color'] = red
     clear()
     draw(matrix, used_letters)
     time.sleep(0.5)
